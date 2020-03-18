@@ -1,19 +1,37 @@
 # Load libraries
 import pandas
-from matplotlib import pyplot
+import matplotlib.pyplot
 import os
 
 PROJECT_DIR = os.path.dirname(__file__)
 
 
+def plot_nyc(dataframe):
+    """Plot New York City"""
+    dataframe = (
+        dataframe[
+            (dataframe['Country/Region'] == 'US') &
+            (dataframe['Province/State'].str.contains('New York', na=False))
+            ]
+    ).drop(['Country/Region'], axis=1).transpose()
+    dataframe.columns = dataframe.iloc[0]
+    dataframe.drop(dataframe.index[0], inplace=True)
+    dataframe = dataframe.loc[(dataframe.sum(axis=1) != 0)]
+    dataframe = dataframe.apply(pandas.to_numeric)
+    dataframe.interpolate(inplace=True)
+    dataframe.plot.line()
+    matplotlib.pyplot.show()
+
+
 def main():
-    """Load dataset"""
-    csv_file_name = os.path.join(
-        PROJECT_DIR, 'COVID-19', 'csse_covid_19_data',
-        'csse_covid_19_time_series', 'time_series_19-covid-Confirmed.csv'
-    )
-    dataframe = pandas.DataFrame(pandas.read_csv(csv_file_name))
-    dataframe.drop(['Lat', 'Long'], axis=1, inplace=True)
+    """Main"""
+    dataframe = read_csv()
+    plot_top_ten(dataframe)
+    plot_nyc(dataframe)
+
+
+def plot_top_ten(dataframe):
+    """Plot the top ten infected countries."""
     # Get rid of U.S. counties
     dataframe: pandas.DataFrame = dataframe[
         ~(dataframe['Province/State'].str.contains(',', na=False))
@@ -24,7 +42,18 @@ def main():
     dataframe = dataframe.nlargest(10, dataframe.columns[-1])
     # Plot
     dataframe.transpose().plot.line()
-    pyplot.show()
+    matplotlib.pyplot.show()
+
+
+def read_csv():
+    """Read the CSV file and return the dataframe"""
+    csv_file_name = os.path.join(
+        PROJECT_DIR, 'COVID-19', 'csse_covid_19_data',
+        'csse_covid_19_time_series', 'time_series_19-covid-Confirmed.csv'
+    )
+    dataframe = pandas.DataFrame(pandas.read_csv(csv_file_name))
+    dataframe.drop(['Lat', 'Long'], axis=1, inplace=True)
+    return dataframe
 
 
 if __name__ == '__main__':
