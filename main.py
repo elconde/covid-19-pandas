@@ -1,19 +1,6 @@
 # Load libraries
 import pandas
-from pandas.plotting import scatter_matrix
 from matplotlib import pyplot
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.naive_bayes import GaussianNB
-from sklearn.svm import SVC
 import os
 
 PROJECT_DIR = os.path.dirname(__file__)
@@ -31,13 +18,14 @@ def main():
     dataframe_us = (
         dataframe[
             (dataframe['Country/Region'] == 'US') &
-            (~dataframe['Province/State'].str.contains(',', na=False))
+            (dataframe['Province/State'].str.contains('New York', na=False))
         ]
     ).drop(['Country/Region'], axis=1).transpose()
     dataframe_us.columns = dataframe_us.iloc[0]
     dataframe_us.drop(dataframe_us.index[0], inplace=True)
-    dataframe_us = dataframe_us.loc[(dataframe.sum(axis=0) != 0)]
-    print(dataframe_us)
+    dataframe_us = dataframe_us.loc[(dataframe_us.sum(axis=1) != 0)]
+    dataframe_us = dataframe_us.apply(pandas.to_numeric)
+    dataframe_us.interpolate(inplace=True)
     dataframe_us.plot.line()
     pyplot.show()
 
