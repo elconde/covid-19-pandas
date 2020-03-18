@@ -25,14 +25,17 @@ def main():
         PROJECT_DIR, 'COVID-19', 'csse_covid_19_data',
         'csse_covid_19_time_series', 'time_series_19-covid-Confirmed.csv'
     )
-    dataset = pandas.read_csv(csv_file_name).transpose()
+    dataset = pandas.read_csv(csv_file_name)
     dataframe = pandas.DataFrame(dataset)
-    dataframe.drop(['Lat', 'Long'],axis='index', inplace=True)
-    dataframe.columns = dataframe.iloc[1]
-    dataframe.drop(dataframe.index[1], inplace=True)
-    columns = [column for column in dataframe.columns if column == 'US']
-    dataframe = dataframe[columns]
-    print(dataframe)
+    dataframe.drop(['Lat', 'Long'], axis=1, inplace=True)
+    dataframe_ny = (
+        dataframe[
+            (dataframe['Country/Region'] == 'US') &
+            (dataframe['Province/State'] == 'New York')
+        ]
+    ).drop(['Province/State', 'Country/Region'], axis=1).transpose()
+    dataframe_ny.plot.line()
+    pyplot.show()
 
 
 if __name__ == '__main__':
