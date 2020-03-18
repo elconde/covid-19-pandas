@@ -12,21 +12,18 @@ def main():
         PROJECT_DIR, 'COVID-19', 'csse_covid_19_data',
         'csse_covid_19_time_series', 'time_series_19-covid-Confirmed.csv'
     )
-    dataset = pandas.read_csv(csv_file_name)
-    dataframe = pandas.DataFrame(dataset)
+    dataframe = pandas.DataFrame(pandas.read_csv(csv_file_name))
     dataframe.drop(['Lat', 'Long'], axis=1, inplace=True)
-    dataframe_us = (
-        dataframe[
-            (dataframe['Country/Region'] == 'US') &
-            (dataframe['Province/State'].str.contains('New York', na=False))
-        ]
-    ).drop(['Country/Region'], axis=1).transpose()
-    dataframe_us.columns = dataframe_us.iloc[0]
-    dataframe_us.drop(dataframe_us.index[0], inplace=True)
-    dataframe_us = dataframe_us.loc[(dataframe_us.sum(axis=1) != 0)]
-    dataframe_us = dataframe_us.apply(pandas.to_numeric)
-    dataframe_us.interpolate(inplace=True)
-    dataframe_us.plot.line()
+    # Get rid of U.S. counties
+    dataframe: pandas.DataFrame = dataframe[
+        ~(dataframe['Province/State'].str.contains(',', na=False))
+    ]
+    # Group by country
+    dataframe = dataframe.groupby(['Country/Region']).sum()
+    # Get the 10 largest
+    dataframe = dataframe.nlargest(10, dataframe.columns[-1])
+    # Plot
+    dataframe.transpose().plot.line()
     pyplot.show()
 
 
