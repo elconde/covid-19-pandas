@@ -28,13 +28,17 @@ def main():
     dataset = pandas.read_csv(csv_file_name)
     dataframe = pandas.DataFrame(dataset)
     dataframe.drop(['Lat', 'Long'], axis=1, inplace=True)
-    dataframe_ny = (
+    dataframe_us = (
         dataframe[
             (dataframe['Country/Region'] == 'US') &
-            (dataframe['Province/State'] == 'New York')
+            (~dataframe['Province/State'].str.contains(',', na=False))
         ]
-    ).drop(['Province/State', 'Country/Region'], axis=1).transpose()
-    dataframe_ny.plot.line()
+    ).drop(['Country/Region'], axis=1).transpose()
+    dataframe_us.columns = dataframe_us.iloc[0]
+    dataframe_us.drop(dataframe_us.index[0], inplace=True)
+    dataframe_us = dataframe_us.loc[(dataframe.sum(axis=0) != 0)]
+    print(dataframe_us)
+    dataframe_us.plot.line()
     pyplot.show()
 
 
