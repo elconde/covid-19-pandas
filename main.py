@@ -24,16 +24,16 @@ def plot_nyc(dataframe):
 
 
 def plot_nyc_vs_china(dataframe):
-    dataframe = (
-        dataframe[
-            (
-                (dataframe['Country/Region'] == 'US') &
-                (dataframe['Province/State'].str.contains(
-                    'New York', na=False)
-                )
-            ) | (dataframe['Country/Region'] == 'China')
-        ]
-    ).groupby(['Country/Region']).sum().transpose()
+    # Get rid of U.S. counties
+    dataframe: pandas.DataFrame = dataframe[
+        ~(dataframe['Province/State'].str.contains(',', na=False)) &
+        (
+            (dataframe['Country/Region'] == 'US') |
+            (dataframe['Country/Region'] == 'China')
+        )
+    ]
+    # Group by country
+    dataframe = dataframe.groupby(['Country/Region']).sum().transpose()
     first_nonzero_idx = (dataframe['US'].nonzero()[0][0])
     dataframe['US'] = dataframe['US'].shift(-first_nonzero_idx)
     print(dataframe)
