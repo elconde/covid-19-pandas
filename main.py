@@ -14,8 +14,7 @@ def plot_nyc(dataframe):
             (dataframe['Province/State'].str.contains('New York', na=False))
             ]
     ).drop(['Country/Region'], axis=1).transpose()
-    dataframe.columns = dataframe.iloc[0]
-    dataframe.drop(dataframe.index[0], inplace=True)
+    turn_first_row_into_header(dataframe)
     dataframe = dataframe.loc[(dataframe.sum(axis=1) != 0)]
     dataframe = dataframe.apply(pandas.to_numeric)
     dataframe.interpolate(inplace=True)
@@ -32,12 +31,29 @@ def plot_us_vs_china(dataframe):
     matplotlib.pyplot.show()
 
 
+def plot_by_state(dataframe):
+    """Plots for every state"""
+    dataframe = remove_us_counties(dataframe)[
+        dataframe['Country/Region'] == 'US'
+    ].drop(['Country/Region'], axis=1).transpose()
+    turn_first_row_into_header(dataframe)
+    dataframe.plot.line(subplots=True, layout=(8,7))
+    matplotlib.pyplot.show()
+
+
+def turn_first_row_into_header(dataframe):
+    """Turn the first row into the header row"""
+    dataframe.columns = dataframe.iloc[0]
+    dataframe.drop(dataframe.index[0], inplace=True)
+
+
 def main():
     """Main"""
     dataframe = read_csv()
     # plot_top_ten(dataframe)
     # plot_nyc(dataframe)
-    plot_us_vs_china(dataframe)
+    plot_by_state(dataframe)
+    # plot_us_vs_china(dataframe)
 
 
 def plot_top_ten(dataframe):
