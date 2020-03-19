@@ -23,20 +23,11 @@ def plot_nyc(dataframe):
     matplotlib.pyplot.show()
 
 
-def plot_nyc_vs_china(dataframe):
-    # Get rid of U.S. counties
-    dataframe: pandas.DataFrame = dataframe[
-        ~(dataframe['Province/State'].str.contains(',', na=False)) &
-        (
-            (dataframe['Country/Region'] == 'US') |
-            (dataframe['Country/Region'] == 'China')
-        )
-    ]
-    # Group by country
+def plot_us_vs_china(dataframe):
+    """Plot NYC vs. China."""
     dataframe = dataframe.groupby(['Country/Region']).sum().transpose()
     first_nonzero_idx = (dataframe['US'].nonzero()[0][0])
     dataframe['US'] = dataframe['US'].shift(-first_nonzero_idx)
-    print(dataframe)
     dataframe.plot.line()
     matplotlib.pyplot.show()
 
@@ -46,22 +37,25 @@ def main():
     dataframe = read_csv()
     # plot_top_ten(dataframe)
     # plot_nyc(dataframe)
-    plot_nyc_vs_china(dataframe)
+    plot_us_vs_china(dataframe)
 
 
 def plot_top_ten(dataframe):
     """Plot the top ten infected countries."""
-    # Get rid of U.S. counties
-    dataframe: pandas.DataFrame = dataframe[
-        ~(dataframe['Province/State'].str.contains(',', na=False))
-    ]
-    # Group by country
-    dataframe = dataframe.groupby(['Country/Region']).sum()
+    dataframe = remove_us_counties(dataframe).groupby(['Country/Region']).sum()
     # Get the 10 largest
     dataframe = dataframe.nlargest(10, dataframe.columns[-1])
     # Plot
     dataframe.transpose().plot.line()
     matplotlib.pyplot.show()
+
+
+def remove_us_counties(dataframe):
+    """Remove U.S. counties which are already included in state data"""
+    dataframe: pandas.DataFrame = dataframe[
+        ~(dataframe['Province/State'].str.contains(',', na=False))
+    ]
+    return dataframe
 
 
 def read_csv():
