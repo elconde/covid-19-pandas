@@ -6,7 +6,7 @@ import os
 PROJECT_DIR = os.path.dirname(__file__)
 
 
-def plot_nyc(dataframe):
+def plot_nyc(dataframe, logy=False):
     """Plot New York City"""
     dataframe = (
         dataframe[
@@ -18,7 +18,7 @@ def plot_nyc(dataframe):
     dataframe = dataframe.loc[(dataframe.sum(axis=1) != 0)]
     dataframe = dataframe.apply(pandas.to_numeric)
     dataframe.interpolate(inplace=True)
-    dataframe.plot.line()
+    dataframe.plot.line(logy=logy)
     matplotlib.pyplot.show()
 
 
@@ -50,19 +50,19 @@ def turn_first_row_into_header(dataframe):
 def main():
     """Main"""
     dataframe = read_csv()
-    # plot_top_ten(dataframe)
+    plot_top_ten(dataframe, logy=True)
     # plot_nyc(dataframe)
-    plot_by_state(dataframe)
+    # plot_by_state(dataframe)
     # plot_us_vs_china(dataframe)
 
 
-def plot_top_ten(dataframe):
+def plot_top_ten(dataframe, logy=False):
     """Plot the top ten infected countries."""
     dataframe = remove_us_counties(dataframe).groupby(['Country/Region']).sum()
     # Get the 10 largest
     dataframe = dataframe.nlargest(10, dataframe.columns[-1])
     # Plot
-    dataframe.transpose().plot.line()
+    dataframe.transpose().plot.line(logy=logy)
     matplotlib.pyplot.show()
 
 
