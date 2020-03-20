@@ -31,13 +31,13 @@ def plot_us_vs_china(dataframe):
     matplotlib.pyplot.show()
 
 
-def plot_by_state(dataframe):
+def plot_by_state(dataframe, logy=False):
     """Plots for every state"""
     dataframe = remove_us_counties(dataframe)[
         dataframe['Country/Region'] == 'US'
     ].drop(['Country/Region'], axis=1).transpose()
     turn_first_row_into_header(dataframe)
-    dataframe.plot.line(subplots=True, layout=(8,7))
+    dataframe.plot.line(subplots=True, layout=(8,7), logy=logy)
     matplotlib.pyplot.show()
 
 
@@ -50,9 +50,9 @@ def turn_first_row_into_header(dataframe):
 def main():
     """Main"""
     dataframe = read_csv()
-    plot_top_ten(dataframe, logy=True)
+    # plot_top_ten(dataframe, logy=True)
     # plot_nyc(dataframe)
-    # plot_by_state(dataframe)
+    plot_by_state(dataframe, logy=True)
     # plot_us_vs_china(dataframe)
 
 
