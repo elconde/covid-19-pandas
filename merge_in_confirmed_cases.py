@@ -7,18 +7,19 @@ import logging
 
 import pandas
 
-COUNTIES = [
-    'Albany', 'Allegany', 'Bronx', 'Broome', 'Cattaraugus', 'Cayuga',
-    'Chautauqua', 'Chemung', 'Chenango', 'Clinton', 'Columbia', 'Cortland',
-    'Delaware', 'Dutchess', 'Erie', 'Essex', 'Franklin', 'Fulton', 'Genesee',
-    'Greene', 'Hamilton', 'Herkimer', 'Jefferson', 'Kings', 'Lewis',
-    'Livingston', 'Madison', 'Monroe', 'Montgomery', 'Nassau', 'New York',
-    'Niagara', 'Oneida', 'Onondaga', 'Ontario', 'Orange', 'Orleans', 'Oswego',
-    'Otsego', 'Putnam', 'Queens', 'Rensselaer', 'Richmond', 'Rockland',
-    'St. Lawrence', 'Saratoga', 'Schenectady', 'Schoharie', 'Schuyler',
-    'Seneca', 'Steuben', 'Suffolk', 'Sullivan', 'Tioga', 'Tompkins', 'Ulster',
-    'Warren', 'Washington', 'Wayne', 'Westchester', 'Wyoming', 'Yates'
+COUNTIES_EX_NYC = [
+    'Albany', 'Allegany', 'Broome', 'Cattaraugus', 'Cayuga', 'Chautauqua',
+    'Chemung', 'Chenango', 'Clinton', 'Columbia', 'Cortland', 'Delaware',
+    'Dutchess', 'Erie', 'Essex', 'Franklin', 'Fulton', 'Genesee', 'Greene',
+    'Hamilton', 'Herkimer', 'Jefferson', 'Lewis', 'Livingston', 'Madison',
+    'Monroe', 'Montgomery', 'Nassau', 'Niagara', 'Oneida', 'Onondaga',
+    'Ontario', 'Orange', 'Orleans', 'Oswego', 'Otsego', 'Putnam', 'Rensselaer',
+    'Rockland', 'St. Lawrence', 'Saratoga', 'Schenectady', 'Schoharie',
+    'Schuyler', 'Seneca', 'Steuben', 'Suffolk', 'Sullivan', 'Tioga',
+    'Tompkins', 'Ulster', 'Warren', 'Washington', 'Wayne', 'Westchester',
+    'Wyoming', 'Yates'
 ]
+NYC_COUNTIES = ['Bronx', 'New York', 'Richmond', 'Kings', 'Queens']
 
 LOGGER = logging.getLogger('merge_in_confirmed_cases')
 
@@ -34,12 +35,33 @@ def setup_logger():
     )
 
 
+def validate_counties(data):
+    """Make sure there are no spurious counties. Make corrections if
+    possible."""
+    # Broom -> Broome typo
+    data.replace('Broom', 'Broome', inplace=True)
+    # New York City counties are not counted individually for some reason
+    counties = COUNTIES_EX_NYC + ['New York City']
+    for county in data['Location'].drop_duplicates():
+        assert county in counties, county+': Invalid county!'
+        assert county not in NYC_COUNTIES, county+': NYC counties are grouped together as "New York City"'
+
+
+
 def merge_in_confirmed_cases():
     """Merge in confirmed cases"""
     data = pandas.read_csv(CSV_FILE_NAME, parse_dates=[2]).sort_values(
         ['Location', 'Timestamp']
     )
+    # Remove time portion
     data['Timestamp'] = data['Timestamp'].dt.date
+    # Remove total
+    data = data[~data['Location'].str.startswith('Total')]
+    # Keep only the latest data for each date
+    data.drop_duplicates(
+        ['Timestamp', 'Location'], keep='last', inplace=True
+    )
+    validate_counties(data)
     print(data)
     # print(data)
 
