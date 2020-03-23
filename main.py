@@ -51,8 +51,8 @@ def main():
     """Main"""
     dataframe = read_csv()
     # plot_top_ten(dataframe, logy=True)
-    # plot_nyc(dataframe)
-    plot_by_state(dataframe, logy=True)
+    plot_nyc(dataframe)
+    # plot_by_state(dataframe, logy=True)
     # plot_us_vs_china(dataframe)
 
 
