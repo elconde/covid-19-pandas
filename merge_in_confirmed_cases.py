@@ -44,25 +44,26 @@ def validate_counties(data):
     counties = COUNTIES_EX_NYC + ['New York City']
     for county in data['Location'].drop_duplicates():
         assert county in counties, county+': Invalid county!'
-        assert county not in NYC_COUNTIES, county+': NYC counties are grouped together as "New York City"'
-
+        assert county not in NYC_COUNTIES, county+(
+            ': NYC counties are grouped together as "New York City"'
+        )
 
 
 def merge_in_confirmed_cases():
     """Merge in confirmed cases"""
-    data = pandas.read_csv(CSV_FILE_NAME, parse_dates=[2]).sort_values(
+    input_data = pandas.read_csv(CSV_FILE_NAME, parse_dates=[2]).sort_values(
         ['Location', 'Timestamp']
     )
     # Remove time portion
-    data['Timestamp'] = data['Timestamp'].dt.date
+    input_data['Timestamp'] = input_data['Timestamp'].dt.date
     # Remove total
-    data = data[~data['Location'].str.startswith('Total')]
+    input_data = input_data[~input_data['Location'].str.startswith('Total')]
     # Keep only the latest data for each date
-    data.drop_duplicates(
+    input_data.drop_duplicates(
         ['Timestamp', 'Location'], keep='last', inplace=True
     )
-    validate_counties(data)
-    print(data)
+    validate_counties(input_data)
+    print(input_data)
     # print(data)
 
 
