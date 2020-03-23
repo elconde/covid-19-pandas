@@ -87,18 +87,23 @@ def merge_in_confirmed_cases():
         ]
     )
     for row in input_data.itertuples():
-        county = row.Location+' County, NY'
-        cases = row.Count
+        if row.Location != 'New York City':
+            province = row.Location+' County, NY'
+        else:
+            # New York County means all five boroughs!
+            province = 'New York County, NY'
+        cases = row.Count.replace(',', '')
         formatted_date = (
             '{dt.month}/{dt.day}/{dt:%y}'.format(dt=row.Timestamp)
         )
         output_row = output_ny_data[
-            output_ny_data['Province/State'] == county
+            output_ny_data['Province/State'] == province
         ]
         if output_row.empty:
             continue
-        print(output_row[formatted_date])
-    print(output_ny_data)
+        output_row[formatted_date].iat[0] = cases
+    output_data.to_csv(OUTPUT_CSV_FILE_NAME, index=False)
+
 
 def main():
     """Set up the logger and merge in the file"""
