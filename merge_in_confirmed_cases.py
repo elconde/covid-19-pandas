@@ -80,25 +80,25 @@ def merge_in_confirmed_cases():
     """Merge in confirmed cases"""
     input_data = get_input_data()
     output_data = get_output_data()
-    output_ny_data = (
-        output_data[
-            (output_data['Country/Region'] == 'US') &
-            (output_data['Province/State'].str.contains(', NY'))
-        ]
-    )
     for row in input_data.itertuples():
-        county = row.Location+' County, NY'
-        cases = row.Count
+        if row.Location != 'New York City':
+            province = row.Location+' County, NY'
+        else:
+            # New York County means all five boroughs!
+            province = 'New York County, NY'
+        cases = row.Count.replace(',', '')
         formatted_date = (
             '{dt.month}/{dt.day}/{dt:%y}'.format(dt=row.Timestamp)
         )
-        output_row = output_ny_data[
-            output_ny_data['Province/State'] == county
+        existing_dataframe = output_data.loc[
+            (output_data['Country/Region'] == 'US') &
+            (output_data['Province/State'] == province)
         ]
-        if output_row.empty:
+        if existing_dataframe.empty:
             continue
-        print(output_row[formatted_date])
-    print(output_ny_data)
+        output_data.at[existing_dataframe.index[0], formatted_date] = cases
+    output_data.to_csv(OUTPUT_CSV_FILE_NAME, index=False)
+
 
 def main():
     """Set up the logger and merge in the file"""
