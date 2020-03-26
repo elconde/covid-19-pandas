@@ -99,6 +99,8 @@ def merge_in_confirmed_cases():
         ]
         if existing_dataframe.empty:
             continue
+        if formatted_date not in existing_dataframe:
+            continue
         output_data.at[existing_dataframe.index[0], formatted_date] = cases
     output_data.to_csv(OUTPUT_CSV_FILE_NAME, index=False)
     post_process()
